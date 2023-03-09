@@ -4,17 +4,17 @@ from django.db import models
 
 class LocationModel(models.Model):
     location_id = models.AutoField(primary_key=True)
-    location_name = models.CharField(max_length=255, blank=False, default=None, unique=True)
+    name = models.CharField(max_length=255, blank=False, default=None, unique=True)
 
 
 class ProducerModel(models.Model):
     producer_id = models.AutoField(primary_key=True)
-    producer_name = models.CharField(max_length=255, blank=False, default=None, unique=True)
+    name = models.CharField(max_length=255, blank=False, default=None, unique=True)
 
 
 class CategoryModel(models.Model):
     category_id = models.AutoField(primary_key=True)
-    category_name = models.CharField(max_length=255, blank=False, default=None, unique=True)
+    name = models.CharField(max_length=255, blank=False, default=None, unique=True)
 
 class EanDeviceModel(models.Model):
     ean_device_id = models.AutoField(primary_key=True)
