@@ -11,5 +11,9 @@ urlpatterns = [
     path('categories/id/<int:pk>/', CategoryDetail.as_view()),
     path('ean_devices/', EanDeviceList.as_view()),
     path('ean_devices/id/<int:pk>/', EanDeviceDetail.as_view()),
+    path('devices/', DeviceList.as_view()),
+    path('devices/id/<int:pk>/', DeviceDetail.as_view()),
+    path('deviceshistories/', DeviceHistoryList.as_view()),
+    path('deviceshistories/id/<int:pk>/', DeviceHistoryDetail.as_view()),
 
 ]

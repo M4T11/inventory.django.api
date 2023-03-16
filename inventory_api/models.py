@@ -29,10 +29,11 @@ class DeviceModel(models.Model):
     serial_number = models.CharField(max_length=255, unique=True)
     description = models.CharField(max_length=10000)
     ean_device = models.ForeignKey(EanDeviceModel, on_delete=models.PROTECT)
+    location = models.ForeignKey(LocationModel, on_delete=models.PROTECT)
     quantity = models.IntegerField(blank=False, default=None)
     condition = models.CharField(max_length=255, blank=False, default=None)
     status = models.CharField(max_length=255, blank=False, default=None)
-    date_added = models.DateField(blank=False, default=None)
+    date_added = models.DateField(blank=False, auto_now_add=True)
     qr_code = models.CharField(max_length=255, blank=False, default=None)
     returned = models.BooleanField(default=False)
 

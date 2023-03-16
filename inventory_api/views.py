@@ -3,9 +3,10 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, get_list_or_404
 from inventory_api.models import *
 from inventory_api.serializers import *
+from django.forms.models import model_to_dict
 
 # Create your views here.
 
@@ -61,8 +62,8 @@ class ProducerList(APIView):
     def post(self, request):
         serializer = ProducerSerializer(data=request.data)
         if serializer.is_valid():
-            if (ProducerModel.objects.get(name=request.data['name'])):
-                return Response(serializer.errors, status=status.HTTP_409_CONFLICT)
+            # if (ProducerModel.objects.get(name=request.data['name'])):
+            #     return Response(serializer.errors, status=status.HTTP_409_CONFLICT)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -96,8 +97,8 @@ class CategoryList(APIView):
     def post(self, request):
         serializer = CategorySerializer(data=request.data)
         if serializer.is_valid():
-            if (CategoryModel.objects.get(name=request.data['name'])):
-                return Response(serializer.errors, status=status.HTTP_409_CONFLICT)
+            # if (CategoryModel.objects.get(name=request.data['name'])):
+            #     return Response(serializer.errors, status=status.HTTP_409_CONFLICT)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -155,6 +156,68 @@ class EanDeviceDetail(APIView):
         ean_device.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+class DeviceList(APIView):
+    def get(self, request):
+        devices = DeviceModel.objects.all()
+        serializer = DeviceSerializer(devices, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = DeviceSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class DeviceDetail(APIView):
+
+    def get(self, request, pk):
+        device = get_object_or_404(DeviceModel, pk=pk)
+        serializer = DeviceSerializer(device)
+        return Response(serializer.data)
+
+    def put(self, request, pk):
+        device = get_object_or_404(DeviceModel, pk=pk)
+        serializer = DeviceSerializer(device, data=request.data)
+        old_status = device.status
+        new_status = request.data['status']
+        device_history = DeviceHistoryList()
+        if serializer.is_valid():
+            if (device.status != request.data['status']):
+                device_history.post(request=model_to_dict(DeviceHistoryModel.objects.create(event=f'Zmiana statusu urządzenia: {old_status} -> {new_status}', device=device)))
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        device_history = DeviceHistoryDetail()
+        device_history.delete(request=None, pk=pk)
+        device = get_object_or_404(DeviceModel, pk=pk)
+        device.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+class DeviceHistoryList(APIView):
+    def get(self, request):
+        device_histories = DeviceHistoryModel.objects.all()
+        serializer = DeviceHistorySerializer(device_histories, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = DeviceHistorySerializer(data=request)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class DeviceHistoryDetail(APIView):
+    def get(self, request, pk):
+        device_history = get_list_or_404(DeviceHistoryModel.objects.all().filter(device__device_id=pk))
+        serializer = DeviceHistorySerializer(device_history, many=True)
+        return Response(serializer.data)
+
+    def delete(self, request, pk):
+        DeviceHistoryModel.objects.all().filter(device__device_id=pk).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 
